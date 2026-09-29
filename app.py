@@ -21,7 +21,11 @@ x0 = st.slider("x₀",0.2,3.0,1.0)
 omega = st.slider("ω",0.1,5.0,1.0)
 n = st.slider("n",0,10,0)
 
+if "Energy eigenstate ψₙ(x,t)" in case:
+    n = st.slider("n",0,10,0)
+
 if "Superposition" in case:
+    n = st.slider("n",0,10,0)
     m = st.slider("m",0,10,1)
 
 if "Coherent" in case:
