@@ -1,3 +1,2 @@
 # Quantum Harmonic Oscillator Simulator
-
-Diego Alejandro Valera Contreras
+Created by Diego Alejandro Valera Contreras
