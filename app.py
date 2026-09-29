@@ -1,0 +1,123 @@
+
+import streamlit as st
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+from scipy.special import eval_hermite
+from math import factorial
+from IPython.display import HTML
+
+st.set_page_config(page_title="Quantum Harmonic Oscillator", layout="wide")
+
+st.title("Quantum Harmonic Oscillator Time Evolution")
+st.subheader("Diego Alejandro Valera Contreras")
+
+st.write("""
+Interactive visualization of:
+- Energy eigenstates ψₙ(x,t)
+- Superposition ψₙ,ₘ(x,t)
+- Coherent states
+""")
+
+case = st.selectbox(
+    "Choose state",
+    [
+        "Energy eigenstate ψₙ(x,t)",
+        "Superposition ψₙ,ₘ(x,t)",
+        "Coherent state"
+    ]
+)
+
+x0 = st.slider("x₀",0.2,3.0,1.0)
+omega = st.slider("ω",0.1,5.0,1.0)
+
+n = st.slider("n",0,10,0)
+
+if "Superposition" in case:
+    m = st.slider("m",0,10,1)
+
+if "Coherent" in case:
+    mean_n = st.slider("<n>",0.0,20.0,5.0)
+
+
+def ground(x):
+    return np.pi**(-0.25)/np.sqrt(x0)*np.exp(-x*x/(2*x0*x0))
+
+
+def eigen(x,n):
+    return eval_hermite(n,x/x0)/np.sqrt(2**n*factorial(n))*ground(x)
+
+
+def psi_n(x,t,n):
+    return np.exp(-1j*omega*(n+0.5)*t)*eigen(x,n)
+
+
+def psi_nm(x,t,n,m):
+    return (psi_n(x,t,n)+psi_n(x,t,m))/np.sqrt(2)
+
+
+def coherent(x,t):
+    alpha=np.sqrt(mean_n)
+
+    return (
+        np.exp(-1j*omega*t/2)
+        /(np.pi**0.25*np.sqrt(x0))
+        *
+        np.exp(
+            -x*x/(2*x0*x0)
+            +np.sqrt(2)*alpha*np.exp(-1j*omega*t)*x/x0
+            -alpha**2*np.exp(-2j*omega*t)/2
+            -mean_n/2
+        )
+    )
+
+
+def state(x,t):
+    if case.startswith("Energy"):
+        return psi_n(x,t,n)
+    elif case.startswith("Superposition"):
+        return psi_nm(x,t,n,m)
+    else:
+        return coherent(x,t)
+
+
+if st.button("Generate 20 second animation"):
+
+    x=np.linspace(-6*x0,6*x0,800)
+
+    fig,ax=plt.subplots(3,1,figsize=(9,9))
+
+    line1,=ax[0].plot([],[])
+    line2,=ax[1].plot([],[])
+    line3,=ax[2].plot([],[])
+
+    for a in ax:
+        a.set_xlim(x[0],x[-1])
+        a.grid()
+
+    ax[0].set_ylabel("Re ψ")
+    ax[1].set_ylabel("Im ψ")
+    ax[2].set_ylabel("|ψ|²")
+    ax[2].set_xlabel("x")
+
+    def update(frame):
+
+        t=frame/10
+
+        psi=state(x,t)
+
+        line1.set_data(x,psi.real)
+        line2.set_data(x,psi.imag)
+        line3.set_data(x,np.abs(psi)**2)
+
+        return line1,line2,line3
+
+
+    ani=FuncAnimation(
+        fig,
+        update,
+        frames=200,
+        interval=100
+    )
+
+    st.pyplot(fig)
