@@ -1,7 +1,3 @@
-# Quantum Harmonic Oscillator Interactive Simulator
+# Quantum Harmonic Oscillator Simulator
 
-Created by Diego Alejandro Valera Contreras.
-
-Run:
-
-streamlit run app.py
+Diego Alejandro Valera Contreras
